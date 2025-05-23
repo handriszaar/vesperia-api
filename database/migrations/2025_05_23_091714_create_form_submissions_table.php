@@ -13,7 +13,19 @@ return new class extends Migration
     {
         Schema::create('form_submissions', function (Blueprint $table) {
             $table->id();
+            $table->string('form_id');
+            $table->json('submission_data'); // Store user answers
+            $table->string('status')->default('submitted');
+            $table->timestamp('submitted_at');
             $table->timestamps();
+
+            // Add indexes
+            $table->index('form_id');
+            $table->index('status');
+            $table->index('submitted_at');
+
+            // Foreign key constraint
+            $table->foreign('form_id')->references('form_id')->on('form_configurations');
         });
     }
 
