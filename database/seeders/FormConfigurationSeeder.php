@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\FormConfiguration;
+use App\Models\FormSubmission;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -14,8 +15,7 @@ class FormConfigurationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Read your JSON file (place paste.txt in storage/app/data/ folder)
-        $jsonPath = storage_path('app/data/paste.txt');
+        $jsonPath = storage_path('app/data/submission.json');
 
         if (!File::exists($jsonPath)) {
             $this->command->error('JSON file not found at: ' . $jsonPath);
@@ -24,16 +24,15 @@ class FormConfigurationSeeder extends Seeder
 
         $jsonContent = File::get($jsonPath);
         $formData = json_decode($jsonContent, true);
-
         if (json_last_error() !== JSON_ERROR_NONE) {
             $this->command->error('Invalid JSON format: ' . json_last_error_msg());
             return;
         }
 
-        // Clear existing data
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        FormSubmission::truncate();
         FormConfiguration::truncate();
 
-        // Insert each form section
         foreach ($formData as $section) {
             FormConfiguration::create([
                 'name' => $section['name'],
@@ -42,6 +41,8 @@ class FormConfigurationSeeder extends Seeder
                 'is_active' => true
             ]);
         }
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
 
         $this->command->info('Form configurations seeded successfully!');
 
